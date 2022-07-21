@@ -9,9 +9,7 @@ ver = 1.1
 # If not, Proceed as normal.
 # If yes, detect if it has a updated version.
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect(('192.168.0.116', 8080))
-# If not connected, It's offline.
-if server.recv(1024) == b'0':
+if server.connect(('192.168.0.116', 8080)) == ConnectionRefusedError:
     print('Server is offline.')
     print('Proceeding as normal.')
     server.close()
@@ -20,7 +18,7 @@ else:
     print('Checking for updates.')
     server.send(b'Do you have an updated version?')
     # If server has a newer version, update.
-    if int(server.recv(1024)) <= ver:
+    if int(server.recv(1024).decode) <= ver:
         print('Server has a newer version.')
         print('Updating.')
         server.send(b'Lemme update.')
@@ -28,6 +26,15 @@ else:
         # If the link is null, don't update.
         if server.recv(1024) == b'0':
             print("Server doesn't have a download link.")
+        else:
+            link = server.recv(1024).decode()
+            print('Downloading from: ' + link)
+            os.system('powershell wget ' + link)
+            print('Downloaded.')
+            print('Updating.')
+            print('Updated.')
+            print('Exiting.')
+            exit()
         print('Update complete.')
         server.close()
         exit()
